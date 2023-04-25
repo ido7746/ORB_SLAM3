@@ -880,12 +880,8 @@ namespace ORB_SLAM3 {
         jacs(0, 2) = r1 * dR_dw3[0][0] + s1 * dR_dw3[1][0] + dR_dw3[2][0];
 
         jacs(0, 3) = dtdX1;
-        jacs(0, 4) = r1 * R[0][1] + s1 * R[1][1] + R[2][1];
-        jacs(0, 5) = r1 * R[0][2] + s1 * R[1][2] + R[2][2];
-
-        jacs(1, 0) = r2 * dR_dw1[0][1] + s2 * dR_dw1[1][1] + dR_dw1[2][1];
-        jacs(1, 1) = r2 * dR_dw2[0][1] + s2 * dR_dw2[1][1] + dR_dw2[2][1];
-        jacs(1, 2) = r2 * dR_dw3[0][1] + s2 * dR_dw3[1][1] + dR_dw3[2][1];
+        jacs(0, 4) = dtdY1;
+        jacs(0, 5) = dtdZ1;
 
         jacs(1, 3) = dtdY1;
         jacs(1, 4) = r2 * R[0][0] + s2 * R[1][0] + R[2][0];
