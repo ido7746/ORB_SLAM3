@@ -805,15 +805,24 @@ namespace ORB_SLAM3 {
         }
     }
 
+    // This function calculates the Jacobian matrix for the given point and parameters
+    // pt: 3D point (X1, Y1, Z1)
+    // nullspace_r: Nullspace vector 'r' (r1, r2, r3)
+    // nullspace_s: Nullspace vector 's' (s1, s2, s3)
+    // w: Rodrigues vector (w1, w2, w3)
+    // t: Translation vector (t1, t2, t3)
+    // jacs: 3x6 matrix that will store the computed Jacobian matrix
     void MLPnPsolver::mlpnpJacs(const point_t& pt, const Eigen::Vector3d& nullspace_r,
         const Eigen::Vector3d& nullspace_s, const rodrigues_t& w,
         const translation_t& t, Eigen::MatrixXd& jacs) {
+        // Extract the individual components of the input vectors
         double r1 = nullspace_r[0], r2 = nullspace_r[1], r3 = nullspace_r[2];
         double s1 = nullspace_s[0], s2 = nullspace_s[1], s3 = nullspace_s[2];
         double X1 = pt[0], Y1 = pt[1], Z1 = pt[2];
         double w1 = w[0], w2 = w[1], w3 = w[2];
         double t1 = t[0], t2 = t[1], t3 = t[2];
 
+        // Precompute terms used in calculations
         double w1_sq = w1 * w1, w2_sq = w2 * w2, w3_sq = w3 * w3;
         double w_norm_sq = w1_sq + w2_sq + w3_sq;
         double w_norm = sqrt(w_norm_sq);
@@ -824,23 +833,28 @@ namespace ORB_SLAM3 {
         double inv_w_norm = 1.0 / w_norm;
         double inv_w_norm_cubed = 1.0 / (w_norm_sq * w_norm);
 
+        // Calculate cross products and other intermediate terms
         double w_cross[3] = { w2 * w3, w1 * w3, w1 * w2 };
         double t4_w_cross[3] = { sin_w_norm * inv_w_norm * w_cross[0], sin_w_norm * inv_w_norm * w_cross[1], sin_w_norm * inv_w_norm * w_cross[2] };
         double t13_t14_w_cross[3] = { one_minus_cos_w_norm * inv_w_norm_sq * w_cross[0], one_minus_cos_w_norm * inv_w_norm_sq * w_cross[1], one_minus_cos_w_norm * inv_w_norm_sq * w_cross[2] };
 
+        // Calculate the rotation matrix
         double R[3][3] = {
             {cos_w_norm + w1_sq * one_minus_cos_w_norm, t13_t14_w_cross[2] + w1 * w2 * one_minus_cos_w_norm, t4_w_cross[1] + w1 * w3 * one_minus_cos_w_norm},
             {t13_t14_w_cross[2] + w1 * w2 * one_minus_cos_w_norm, cos_w_norm + w2_sq * one_minus_cos_w_norm, t13_t14_w_cross[0] + w2 * w3 * one_minus_cos_w_norm},
             {t4_w_cross[1] + w1 * w3 * one_minus_cos_w_norm, t13_t14_w_cross[0] + w2 * w3 * one_minus_cos_w_norm, cos_w_norm + w3_sq * one_minus_cos_w_norm}
         };
 
+        // Calculate intermediate terms for translation vector
         double t15 = t1 - Y1 * R[0][1] + Z1 * R[0][2] + X1 * R[0][0];
         double t16 = t2 - Y1 * R[1][1] + Z1 * R[1][2] + X1 * R[1][0];
         double t17 = t3 - Y1 * R[2][1] + Z1 * R[2][2] + X1 * R[2][0];
 
+        // Calculate derivatives of the translation vector
         double dtdw1 = -2.0 * sin_w_norm * inv_w_norm_cubed * (w1 * t15 + w2 * t16 + w3 * t17);
         double dtdw2 = (w_norm_sq * sin_w_norm - 2.0 * w_norm * one_minus_cos_w_norm) * inv_w_norm_cubed;
 
+        // Calculate derivatives of the rotation matrix with respect to w1, w2, and w3
         double dR_dw1[3][3] = {
         {-2.0 * w1 * dtdw2, dtdw1 * w3, -dtdw1 * w2},
         {dtdw1 * w3, -dtdw2 * w1, -w_norm * sin_w_norm * inv_w_norm},
@@ -859,22 +873,12 @@ namespace ORB_SLAM3 {
         {-w_norm * sin_w_norm * inv_w_norm, dtdw1 * w1, -2.0 * w3 * dtdw2}
         };
 
+        // Calculate derivatives of the translation vector with respect to X1, Y1, and Z1
         double dtdX1 = r1 * R[0][0] + s1 * R[1][0] + R[2][0];
         double dtdY1 = r1 * R[0][1] + s1 * R[1][1] + R[2][1];
         double dtdZ1 = r1 * R[0][2] + s1 * R[1][2] + R[2][2];
 
-        jacs(0, 0) = r1 * dR_dw1[0][0] + s1 * dR_dw1[1][0] + dR_dw1[2][0];
-        jacs(0, 1) = r1 * dR_dw2[0][0] + s1 * dR_dw2[1][0] + dR_dw2[2][0];
-        jacs(0, 2) = r1 * dR_dw3[0][0] + s1 * dR_dw3[1][0] + dR_dw3[2][0];
-
-        jacs(1, 0) = r2 * dR_dw1[0][1] + s2 * dR_dw1[1][1] + dR_dw1[2][1];
-        jacs(1, 1) = r2 * dR_dw2[0][1] + s2 * dR_dw2[1][1] + dR_dw2[2][1];
-        jacs(1, 2) = r2 * dR_dw3[0][1] + s2 * dR_dw3[1][1] + dR_dw3[2][1];
-
-        jacs(2, 0) = r3 * dR_dw1[0][2] + s3 * dR_dw1[1][2] + dR_dw1[2][2];
-        jacs(2, 1) = r3 * dR_dw2[0][2] + s3 * dR_dw2[1][2] + dR_dw2[2][2];
-        jacs(2, 2) = r3 * dR_dw3[0][2] + s3 * dR_dw3[1][2] + dR_dw3[2][2];
-
+        // Fill the jacs matrix with the computed partial derivatives
         jacs(0, 0) = r1 * dR_dw1[0][0] + s1 * dR_dw1[1][0] + dR_dw1[2][0];
         jacs(0, 1) = r1 * dR_dw2[0][0] + s1 * dR_dw2[1][0] + dR_dw2[2][0];
         jacs(0, 2) = r1 * dR_dw3[0][0] + s1 * dR_dw3[1][0] + dR_dw3[2][0];
@@ -883,9 +887,13 @@ namespace ORB_SLAM3 {
         jacs(0, 4) = dtdY1;
         jacs(0, 5) = dtdZ1;
 
+        jacs(1, 0) = r2 * dR_dw1[0][1] + s2 * dR_dw1[1][1] + dR_dw1[2][1];
+        jacs(1, 1) = r2 * dR_dw2[0][1] + s2 * dR_dw2[1][1] + dR_dw2[2][1];
+        jacs(1, 2) = r2 * dR_dw3[0][1] + s2 * dR_dw3[1][1] + dR_dw3[2][1];
+
         jacs(1, 3) = dtdY1;
         jacs(1, 4) = r2 * R[0][0] + s2 * R[1][0] + R[2][0];
-        jacs(1, 5) = r2 * R[0][2] + s2 * R[1][2] + R[2][2];
+        jacs(1, 5) = r2 * R[0][2] + s2 * R[1][2] + R[2][2];     
     }
 
 
