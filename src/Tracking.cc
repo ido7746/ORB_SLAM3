@@ -26,13 +26,16 @@
 #include "Optimizer.h"
 #include "Pinhole.h"
 #include "KannalaBrandt8.h"
-#include "MLPnPsolver.h"
+#include "PnPsolver.h"
 #include "GeometricTools.h"
 
 #include <iostream>
 
 #include <mutex>
 #include <chrono>
+#include<opencv2/core/core.hpp>
+#include<opencv2/features2d/features2d.hpp>
+
 
 
 using namespace std;
@@ -180,6 +183,20 @@ double calcDeviation(vector<int> v_values, double average)
     }
     return sqrt(accum / total);
 }
+
+Eigen::Matrix4f cvMatToEigen(const cv::Mat& cvMat4)
+{
+    Eigen::Matrix4f eigenMat;
+    for(int i=0; i<4; ++i)
+    {
+        for(int j=0; j<4; ++j)
+        {
+            eigenMat(i,j) = cvMat4.at<float>(i,j);
+        }
+    }
+    return eigenMat;
+}
+
 
 void Tracking::LocalMapStats2File()
 {
@@ -3606,6 +3623,19 @@ void Tracking::UpdateLocalKeyFrames()
     }
 }
 
+Eigen::Matrix4f cvMatToEigen(const cv::Mat& cvMat4)
+{
+    Eigen::Matrix4f eigenMat;
+    for(int i=0; i<4; ++i)
+    {
+        for(int j=0; j<4; ++j)
+        {
+            eigenMat(i,j) = cvMat4.at<float>(i,j);
+        }
+    }
+    return eigenMat;
+}
+
 bool Tracking::Relocalization()
 {
     Verbose::PrintMess("Starting relocalization", Verbose::VERBOSITY_NORMAL);
@@ -3627,8 +3657,8 @@ bool Tracking::Relocalization()
     // If enough matches are found we setup a PnP solver
     ORBmatcher matcher(0.75,true);
 
-    vector<MLPnPsolver*> vpMLPnPsolvers;
-    vpMLPnPsolvers.resize(nKFs);
+    vector<PnPsolver*> vpPnPsolvers;
+    vpPnPsolvers.resize(nKFs);
 
     vector<vector<MapPoint*> > vvpMapPointMatches;
     vvpMapPointMatches.resize(nKFs);
@@ -3653,9 +3683,9 @@ bool Tracking::Relocalization()
             }
             else
             {
-                MLPnPsolver* pSolver = new MLPnPsolver(mCurrentFrame,vvpMapPointMatches[i]);
+                PnPsolver* pSolver = new PnPsolver(mCurrentFrame,vvpMapPointMatches[i]);
                 pSolver->SetRansacParameters(0.99,10,300,6,0.5,5.991);  //This solver needs at least 6 points
-                vpMLPnPsolvers[i] = pSolver;
+                vpPnPsolvers[i] = pSolver;
                 nCandidates++;
             }
         }
@@ -3678,9 +3708,9 @@ bool Tracking::Relocalization()
             int nInliers;
             bool bNoMore;
 
-            MLPnPsolver* pSolver = vpMLPnPsolvers[i];
+            PnPsolver* pSolver = vpPnPsolvers[i];
             Eigen::Matrix4f eigTcw;
-            bool bTcw = pSolver->iterate(5,bNoMore,vbInliers,nInliers, eigTcw);
+            cv::Mat Tcw = pSolver->iterate(5,bNoMore,vbInliers,nInliers);
 
             // If Ransac reachs max. iterations discard keyframe
             if(bNoMore)
@@ -3690,11 +3720,23 @@ bool Tracking::Relocalization()
             }
 
             // If a Camera Pose is computed, optimize
-            if(bTcw)
+            if(!Tcw.empty())
             {
-                Sophus::SE3f Tcw(eigTcw);
-                mCurrentFrame.SetPose(Tcw);
-                // Tcw.copyTo(mCurrentFrame.mTcw);
+// Convert cv::Mat to Eigen::Matrix4f
+Eigen::Matrix4f TcwEigen = cvMatToEigen(Tcw);
+
+// Extract rotation and translation from TcwEigen
+Eigen::Matrix3f rot = TcwEigen.block<3,3>(0,0);
+Eigen::Vector3f trans = TcwEigen.block<3,1>(0,3);
+
+// Create Sophus::SE3 object
+Sophus::SE3<float> pose(rot, trans);
+
+// Assign pose to mCurrentFrame.mTcw
+mCurrentFrame.mTcw = pose;
+
+
+
 
                 set<MapPoint*> sFound;
 

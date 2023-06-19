@@ -78,11 +78,11 @@ add_library(${PROJECT_NAME} SHARED
         src/CameraModels/KannalaBrandt8.cpp
         src/OptimizableTypes.cpp
         src/MLPnPsolver.cpp
+        src/PnPsolver.cc
         src/GeometricTools.cc
         src/TwoViewReconstruction.cc
         src/Config.cc
         src/Settings.cc
-        src/test.cpp
         include/System.h
         include/Tracking.h
         include/LocalMapping.h
@@ -108,6 +108,7 @@ add_library(${PROJECT_NAME} SHARED
         include/CameraModels/KannalaBrandt8.h
         include/OptimizableTypes.h
         include/MLPnPsolver.h
+        include/PnPsolver.h
         include/GeometricTools.h
         include/TwoViewReconstruction.h
         include/SerializationUtils.h

@@ -164,7 +164,6 @@ public:
 
 
 
-private:
     //Sophus/Eigen migration
     Sophus::SE3<float> mTcw;
     Eigen::Matrix<float,3,3> mRwc;
@@ -172,6 +171,7 @@ private:
     Eigen::Matrix<float,3,3> mRcw;
     Eigen::Matrix<float,3,1> mtcw;
     bool mbHasPose;
+private:
 
     //Rcw_ not necessary as Sophus has a method for extracting the rotation matrix: Tcw_.rotationMatrix()
     //tcw_ not necessary as Sophus has a method for extracting the translation vector: Tcw_.translation()
