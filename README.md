@@ -10,7 +10,7 @@ We used Raspberry pi Server with 16GB memory, running on ubuntu 20.4.
 
 ![Alt Text](EPnP_VS_MLPNP_accuracy.png)
 
-![Alt Text](EPnP_VS_MLPNP_accuracy.png)
+![Alt Text](EPnP_VS_MLPNP_running_time.png)
 
 ## Project Authors
 Project is done by [Neta Oren](https://github.com/n242), [Daniel Brahano](https://github.com/DanielBrahano) and [Ido Shitrit](https://github.com/ido7746).
