@@ -4,6 +4,16 @@ We modified ORB-SLAM3 as part of a project in Advanced Robotics Lab at Haifa Uni
 Our findings were that EPnP class from ORB-SLAM2 performed better than MLPnP from ORB-SLAM3. Also, our tries to optimize main functions in the MLPnP class didn't show significant improvements in speed or accuracy, and even added to the overall runtime. 
 Thus, we created a seperate branch for EPnP code integrated with ORB-SLAM3, 'epnp_branch' and 'optimizations_branch' for optimizations to MLPnP class. 
 
+We used Raspberry pi Server with 16GB memory, running on ubuntu 20.4. 
+
+## Experimental Results
+
+![Alt Text](epnp_branch/EPnP_VS_MLPNP_accuracy.png)
+
+![Alt Text](epnp_branch/EPnP_VS_MLPNP_accuracy.png)
+
+## Project Authors
+Project is done by [Neta Oren](https://github.com/n242), [Daniel Brahano](https://github.com/DanielBrahano) and [Ido Shitrit](https://github.com/ido7746).
 
 
 Code is taken from ORB-SLAM3 V1.0, December 22th, 2021 and  ORB-SLAM2 V1.0, 
@@ -20,6 +30,10 @@ alt="ORB-SLAM3" width="240" height="180" border="10" /></a>
 ### Related Publications:
 
 [ORB-SLAM3] Carlos Campos, Richard Elvira, Juan J. Gómez Rodríguez, José M. M. Montiel and Juan D. Tardós, **ORB-SLAM3: An Accurate Open-Source Library for Visual, Visual-Inertial and Multi-Map SLAM**, *IEEE Transactions on Robotics 37(6):1874-1890, Dec. 2021*. **[PDF](https://arxiv.org/abs/2007.11898)**.
+
+[A Review of Solutions for Perspective-n-Point Problem in  Camera Pose Estimation] Xiao Xin LU
+
+[MLPNP - A REAL-TIME MAXIMUM LIKELIHOOD SOLUTION TO THE PERSPECTIVE-N-POINT PROBLEM] S. Urban, J.Leitloff, S.Hinz
 
 [IMU-Initialization] Carlos Campos, J. M. M. Montiel and Juan D. Tardós, **Inertial-Only Optimization for Visual-Inertial Initialization**, *ICRA 2020*. **[PDF](https://arxiv.org/pdf/2003.05766.pdf)**
 
