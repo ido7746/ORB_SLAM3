@@ -52,9 +52,7 @@
 
 
 namespace ORB_SLAM3 {
-    this->K << F.fx, 0, F.cx,
-    0, F.fy, F.cy,
-    0, 0, 1;
+
 
     MLPnPsolver::MLPnPsolver(const Frame &F, const vector<MapPoint *> &vpMapPointMatches):
             mnInliersi(0), mnIterations(0), mnBestInliers(0), N(0), mpCamera(F.mpCamera){
@@ -395,42 +393,6 @@ namespace ORB_SLAM3 {
         return false;
     }
 
-    //Funcs to get cov matrix
-    // Function to find mean.
-    float mean(float arr[], int n)
-    {
-        float sum = 0;
-        for (int i = 0; i < n; i++)
-            sum = sum + arr[i];
-        return sum / n;
-    }
-
-    // Function to find covariance.
-    float covariance(float arr1[], float arr2[], int n)
-    {
-        float sum = 0;
-        float mean_arr1 = mean(arr1, n);
-        float mean_arr2 = mean(arr2, n);
-        for (int i = 0; i < n; i++)
-            sum = sum + (arr1[i] - mean_arr1) * (arr2[i] - mean_arr2);
-        return sum / (n - 1);
-    }
-
-    // Driver function.
-    int calc_covariance(arr1, arr2)
-    {
-        //float arr1[] = { 65.21, 64.75, 65.26, 65.76, 65.96 };
-        int n = sizeof(arr1) / sizeof(arr1[0]);
-        //float arr2[] = { 67.25, 66.39, 66.12, 65.70, 66.64 };
-        int m = sizeof(arr2) / sizeof(arr2[0]);
-
-        if (m == n){
-            covMatrix = covariance(arr1, arr2, m);
-            cout << covMatrix
-        }
-        return covMatrix;
-    }
-
 	//MLPnP methods
 	//computePose is called in Refine and in RANSAC funcs
     void MLPnPsolver::computePose(const bearingVectors_t &f, const points_t &p, const cov3_mats_t &covMats,
@@ -442,10 +404,6 @@ namespace ORB_SLAM3 {
         // compute the nullspace of all vectors
         std::vector<Eigen::MatrixXd> nullspaces(numberCorrespondences);
         Eigen::MatrixXd points3(3, numberCorrespondences);
-        points_t points3v(numberCorrespondences);
-        points_t points3v_x(numberCorrespondences);
-        points_t points3v_y(numberCorrespondences);
-        points4_t points4v(numberCorrespondences);
         for (size_t i = 0; i < numberCorrespondences; i++) {
             bearingVector_t f_current = f[indices[i]];
             points3.col(i) = p[indices[i]];
@@ -455,13 +413,8 @@ namespace ORB_SLAM3 {
             nullspaces[i] = svd_f.matrixV().block(0, 1, 3, 2);
             points3v[i] = p[indices[i]];
             //getting just x,y indexes for cov matrix
-            points3v_x = points3v[i][0]
-            points3v_y = points3v[i][1]
+
         }
-
-        //computing covMatrix according to points matrix: points3v[i]
-        Eigen::Matrix3d covMatrix= calc_covariance(points3v_x, points3v_y)
-
 
         //////////////////////////////////////
         // 1. test if we have a planar scene
@@ -476,7 +429,7 @@ namespace ORB_SLAM3 {
         //if (minEigenVal < 1e-3 || minEigenVal == 0.0)
         rankTest.setThreshold(1e-5);
         //rankTest.setThreshold(1e-10); // didn't change
-        if (rankTest.rank() == 2) { // TODO:  check setting threshold to lower value
+        if (rankTest.rank() == 2) {
             planar = true;
             // self adjoint is faster and more accurate than general eigen solvers
             // also has closed form solution for 3x3 self-adjoint matrices
@@ -497,7 +450,7 @@ namespace ORB_SLAM3 {
 
         // if we do have covariance information
         // -> fill covariance matrix
-        covMats = pix2rays(points3v, covMatrix) // TODO: remove covmax from function sig or xhane here
+        covMats = pix2rays(points3v, covMatrix)
         if (covMats.size() == numberCorrespondences) { //when is it not equal, check use of COV matrix
             //  numberCorrespondences is the size of input indices vector, and covMats is input
             use_cov = true;
@@ -607,12 +560,10 @@ namespace ORB_SLAM3 {
         // 4. solve least squares
         //////////////////////////////////////
         Eigen::MatrixXd AtPA;
-        if (use_cov) // there's covariance, we chacked
-            AtPA = A.transpose() * P * A; // setting up the full normal equations seems to be unstable
-        else
-            AtPA = A.transpose() * A;
 
-        Eigen::JacobiSVD<Eigen::MatrixXd> svd_A(AtPA, Eigen::ComputeFullV); //TODO: Eigen::ComputeThin check
+        AtPA = A.transpose() * A;
+
+        Eigen::JacobiSVD<Eigen::MatrixXd> svd_A(AtPA, Eigen::ComputeFullV);
         Eigen::MatrixXd result1 = svd_A.matrixV().col(colsA - 1);
 
         ////////////////////////////////
@@ -818,10 +769,7 @@ namespace ORB_SLAM3 {
                                      nullspaces,
                                      r, Jac, true);
 
-            if (use_cov)
-                JacTSKll = Jac.transpose() * Kll;
-            else
-                JacTSKll = Jac.transpose();
+            JacTSKll = Jac.transpose();
 
             A = JacTSKll * Jac;
 
@@ -879,23 +827,6 @@ namespace ORB_SLAM3 {
 
                 // s
                 fjac.block<1, 6>(ii + 1, 0) = jacs.row(1);
-
-               /* // r
-                fjac(ii, 0) = jacs(0, 0);
-                fjac(ii, 1) = jacs(0, 1);
-                fjac(ii, 2) = jacs(0, 2);
-
-                fjac(ii, 3) = jacs(0, 3);
-                fjac(ii, 4) = jacs(0, 4);
-                fjac(ii, 5) = jacs(0, 5);
-                // s
-                fjac(ii + 1, 0) = jacs(1, 0);
-                fjac(ii + 1, 1) = jacs(1, 1);
-                fjac(ii + 1, 2) = jacs(1, 2);
-
-                fjac(ii + 1, 3) = jacs(1, 3);
-                fjac(ii + 1, 4) = jacs(1, 4);
-                fjac(ii + 1, 5) = jacs(1, 5);*/
 
             }
             ii += 2;
