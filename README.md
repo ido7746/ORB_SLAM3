@@ -6,11 +6,28 @@ Thus, we created a seperate branch for EPnP code integrated with ORB-SLAM3, 'epn
 
 We used Raspberry pi Server with 16GB memory, running on ubuntu 20.4. 
 
+## Restoring Experiments
+
+In order to rerun the experiment run ./run_datasets.sh script, for datasets V103, V203 that can be downloaded [here](http://robotics.ethz.ch/~asl-datasets/ijrr_euroc_mav_dataset/vicon_room1/V1_03_difficult/V1_03_difficult.bag) and [here](http://robotics.ethz.ch/~asl-datasets/ijrr_euroc_mav_dataset/vicon_room2/V2_03_difficult/V2_03_difficult.bag)
+For analyzing each experiment and comparing the results run the python code at folder 'analyze_results'. Run via the the line:
+python main.py DATA_PATH\data.csv TEST_LOGS_PATH\kf_dataset-V103_mono.txt DEFAULT_LOGS_PATH\kf_dataset-V103_mono.txt
+
+While replacing the paths TEST_LOGS_PATH, DEFAULT_LOGS_PATH with the paths of the outputs folder of the experiment of the test and default files correspodingly. 
+And replace DATA_PATH\ with the original dataset data, refer to the data.csv which is under folder 'mav0\state_groundtruth_estimate0'. 
+
+For experiment 1 - EPnP vs MLPnP:
+Run once the EPnP branch, aka 'epnp_branch', and again the original code of ORB SLAM at branch master. Compare the results. 
+
+For experiment 2 - Optimized MLPnP code vs origina:
+Run once the branch with the optimized code, aka 'optimizations_branch', and again the original code of ORB SLAM at branch master. Compare the results. 
+
+
+
 ## Experimental Results
 
-![Alt Text](epnp_branch/EPnP_VS_MLPNP_accuracy.png)
+![Alt Text](EPnP_VS_MLPNP_accuracy.png)
 
-![Alt Text](epnp_branch/EPnP_VS_MLPNP_accuracy.png)
+![Alt Text](EPnP_VS_MLPNP_running_time.png)
 
 ## Project Authors
 Project is done by [Neta Oren](https://github.com/n242), [Daniel Brahano](https://github.com/DanielBrahano) and [Ido Shitrit](https://github.com/ido7746).
