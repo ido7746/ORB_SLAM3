@@ -82,7 +82,6 @@ add_library(${PROJECT_NAME} SHARED
         src/TwoViewReconstruction.cc
         src/Config.cc
         src/Settings.cc
-        src/test.cpp
         include/System.h
         include/Tracking.h
         include/LocalMapping.h
