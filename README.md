@@ -9,9 +9,9 @@ We used Raspberry pi Server with 16GB memory, running on ubuntu 20.4.
 
 ## Experimental Results
 
-![Alt Text](visuals/time.png)
+![Alt Text](visuals/time.PNG)
 
-![Alt Text](visuals/error.png)
+![Alt Text](visuals/error.PNG)
 
 ## Restoring Experiments
 
