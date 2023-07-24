@@ -18,12 +18,12 @@ We used Raspberry pi Server with 16GB memory, running on ubuntu 20.4.
 In order to rerun the experiment, folllow these steps:
 1. Select the code to test, if EPnP vs MLPnP or Optimized MLPnP code vs original:
   * For experiment 1 - EPnP vs MLPnP:
-    Run once the EPnP branch, aka 'epnp_branch', and again the original code of ORB SLAM at branch master. Compare the results. 
+    Run once the EPnP branch, aka 'epnp_branch', and again the original code of ORB SLAM at 'baseline' branch. Compare the results. 
   * For experiment 2 - Optimized MLPnP code vs original:
-    Run once the branch with the optimized code, aka 'optimizations_branch', and again the original code of ORB SLAM at branch master. Compare the results. 
+    Run once the branch with the optimized code, aka 'optimizations_branch', and again the original code of ORB SLAM at 'baseline' branch. Compare the results. 
 2. Download satasets V103, V203 [here](http://robotics.ethz.ch/~asl-datasets/ijrr_euroc_mav_dataset/vicon_room1/V1_03_difficult/V1_03_difficult.bag) and [here](http://robotics.ethz.ch/~asl-datasets/ijrr_euroc_mav_dataset/vicon_room2/V2_03_difficult/V2_03_difficult.bag)
 3. Move datasets to 'Datasets' folder into folders /EuRoc/V103, /EuRoc/V203, or modify file './run_datasets.sh' at lines 21, 31 to your paths.
-4. run './run_datasets.sh' script
+4. Run script 'run_datasets.sh' with './run_datasets.sh'  
 
 
 # Analyzing results
